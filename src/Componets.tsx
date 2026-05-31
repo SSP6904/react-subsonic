@@ -1,5 +1,14 @@
 import React, { useState, ChangeEvent, ReactNode, ReactElement, MouseEventHandler, useEffect } from "react";
-import md5 from "md5";
+import { pbkdf2Sync, randomBytes } from "crypto";
+
+function hashPasswordForStorage(password: string): string {
+    const iterations = 210000
+    const keyLength = 32
+    const digest = "sha256"
+    const salt = randomBytes(16).toString("hex")
+    const hash = pbkdf2Sync(password, salt, iterations, keyLength, digest).toString("hex")
+    return `enc:pbkdf2$${digest}$${iterations}$${salt}$${hash}`
+}
 
 interface UserAuth {
     instance_url: string
@@ -153,7 +162,7 @@ export class Section {
                     const jsonData = {
                         instance_url: formData.instance_url?.toString(),
                         username: formData.username?.toString(),
-                        password: `enc:${md5(passwordValue)}`,
+                        password: hashPasswordForStorage(passwordValue),
                         app_name: formData.app_name?.toString(),
                         version: formData.version?.toString(),
                         roles: {
