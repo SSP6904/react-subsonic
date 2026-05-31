@@ -12,7 +12,7 @@ Additionally, you have to make sure that you're instance has an **HTTPS feature 
 
 ## How it works
 
-> **Note**
+> [!NOTE]
 >
 > This section is incomplete currently! Check back later once there's a change to it!
 
