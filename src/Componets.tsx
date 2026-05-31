@@ -1,4 +1,5 @@
 import React, { useState, ChangeEvent, ReactNode, ReactElement, MouseEventHandler, useEffect } from "react";
+import md5 from "md5";
 
 interface UserAuth {
     instance_url: string
@@ -149,6 +150,7 @@ export class Section {
                     const jsonData = {
                         instance_url: formData.instance_url?.toString(),
                         username: formData.username?.toString(),
+                        password: `enc:${md5(formData.password?.toString()!)}`,
                         app_name: formData.app_name?.toString(),
                         version: formData.version?.toString(),
                         roles: {
