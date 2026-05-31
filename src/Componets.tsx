@@ -135,10 +135,13 @@ export class Section {
             if (!formData.instance_url || !formData.username || !formData.password || !formData.app_name || !formData.version) {
                 alert("Please fill out the required form fields!")
                 console.error("Please fill out the required form fields!")
+                event.preventDefault()
+                return
             }
+            const passwordValue = formData.password.toString()
             const url_request = new URL(formData.instance_url?.toString() + "/rest/getUser")
             url_request.searchParams.set('u', formData.username?.toString()!)
-            url_request.searchParams.set('p', formData.password?.toString()!)
+            url_request.searchParams.set('p', passwordValue)
             url_request.searchParams.set('v', formData.version?.toString()!)
             url_request.searchParams.set('c', formData.app_name?.toString()!)
             url_request.searchParams.set('f', "json")
@@ -150,7 +153,7 @@ export class Section {
                     const jsonData = {
                         instance_url: formData.instance_url?.toString(),
                         username: formData.username?.toString(),
-                        password: `enc:${md5(formData.password?.toString()!)}`,
+                        password: `enc:${md5(passwordValue)}`,
                         app_name: formData.app_name?.toString(),
                         version: formData.version?.toString(),
                         roles: {
