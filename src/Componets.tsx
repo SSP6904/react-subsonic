@@ -1,12 +1,37 @@
 import React, { useState, ChangeEvent, ReactNode, ReactElement, MouseEventHandler, useEffect } from "react";
-import { pbkdf2Sync, randomBytes } from "crypto";
 
-function hashPasswordForStorage(password: string): string {
+function bytesToHex(bytes: Uint8Array): string {
+    return Array.from(bytes)
+        .map(function (value) {
+            return value.toString(16).padStart(2, "0")
+        })
+        .join("")
+}
+
+async function hashPasswordForStorage(password: string): Promise<string> {
     const iterations = 210000
     const keyLength = 32
     const digest = "sha256"
-    const salt = randomBytes(16).toString("hex")
-    const hash = pbkdf2Sync(password, salt, iterations, keyLength, digest).toString("hex")
+    const saltBytes = crypto.getRandomValues(new Uint8Array(16))
+    const salt = bytesToHex(saltBytes)
+    const keyMaterial = await crypto.subtle.importKey(
+        "raw",
+        new TextEncoder().encode(password),
+        "PBKDF2",
+        false,
+        ["deriveBits"]
+    )
+    const hashBuffer = await crypto.subtle.deriveBits(
+        {
+            name: "PBKDF2",
+            hash: "SHA-256",
+            salt: new TextEncoder().encode(salt),
+            iterations: iterations
+        },
+        keyMaterial,
+        keyLength * 8
+    )
+    const hash = bytesToHex(new Uint8Array(hashBuffer))
     return `enc:pbkdf2$${digest}$${iterations}$${salt}$${hash}`
 }
 
@@ -155,14 +180,14 @@ export class Section {
             url_request.searchParams.set('c', formData.app_name?.toString()!)
             url_request.searchParams.set('f', "json")
             url_request.searchParams.set('username', formData.username?.toString()!)
-            Utilities.FetchAPI(url_request.href, "GET").then(function (response) {
+            Utilities.FetchAPI(url_request.href, "GET").then(async function (response) {
                 if (response instanceof Error) {
                     Utilities.ErrorHandler(500, response.message)
                 } else {
                     const jsonData = {
                         instance_url: formData.instance_url?.toString(),
                         username: formData.username?.toString(),
-                        password: hashPasswordForStorage(passwordValue),
+                        password: await hashPasswordForStorage(passwordValue),
                         app_name: formData.app_name?.toString(),
                         version: formData.version?.toString(),
                         roles: {
