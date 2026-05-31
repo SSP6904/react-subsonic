@@ -1,13 +1,13 @@
 {
   "name": "react-subsonic",
   "version": "1.0.0",
-  "description": "A simple React-base website that downloads music from your subsonic server playlist! :musical_note:",
+  "description": "A simple React-base website that downloads music from your subsonic server! :musical_note:",
   "type": "module",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon .",
-    "build": ""
+    "build": "echo \"Error: no build specified\" && exit 1"
   },
   "nodemonConfig": {
     "ignore": [
@@ -23,6 +23,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "bootstrap": "^5.3.8",
     "nodemon": "^3.1.14",
     "react": "^19.2.6",
     "react-dom": "^19.2.6"

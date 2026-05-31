@@ -4,7 +4,6 @@
     "target": "esnext",
     "types": [
       "@types/node",
-      "@types/express",
       "@types/react-dom",
       "@types/react"
     ],
