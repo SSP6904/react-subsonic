@@ -149,7 +149,6 @@ export class Section {
                     const jsonData = {
                         instance_url: formData.instance_url?.toString(),
                         username: formData.username?.toString(),
-                        password: formData.password?.toString(),
                         app_name: formData.app_name?.toString(),
                         version: formData.version?.toString(),
                         roles: {
