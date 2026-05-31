@@ -1,40 +1,5 @@
 import React, { useState, ChangeEvent, ReactNode, ReactElement, MouseEventHandler, useEffect } from "react";
 
-function bytesToHex(bytes: Uint8Array): string {
-    return Array.from(bytes)
-        .map(function (value) {
-            return value.toString(16).padStart(2, "0")
-        })
-        .join("")
-}
-
-async function hashPasswordForStorage(password: string): Promise<string> {
-    const iterations = 210000
-    const keyLength = 32
-    const digest = "sha256"
-    const saltBytes = crypto.getRandomValues(new Uint8Array(16))
-    const salt = bytesToHex(saltBytes)
-    const keyMaterial = await crypto.subtle.importKey(
-        "raw",
-        new TextEncoder().encode(password),
-        "PBKDF2",
-        false,
-        ["deriveBits"]
-    )
-    const hashBuffer = await crypto.subtle.deriveBits(
-        {
-            name: "PBKDF2",
-            hash: "SHA-256",
-            salt: new TextEncoder().encode(salt),
-            iterations: iterations
-        },
-        keyMaterial,
-        keyLength * 8
-    )
-    const hash = bytesToHex(new Uint8Array(hashBuffer))
-    return `enc:pbkdf2$${digest}$${iterations}$${salt}$${hash}`
-}
-
 interface UserAuth {
     instance_url: string
     username: string
@@ -72,13 +37,35 @@ interface PlaylistData {
 }
 
 export class Utilities {
+    static bytesToHex(bytes: Uint8Array) {
+        return Array.from(bytes).map(function (value) {return value.toString(16).padStart(2, "0")}).join("")
+    }
+    static hashPassword(password: string) {
+        if (!window.crypto || !window.crypto.subtle) {
+            Utilities.ErrorHandler(10, "Cryptographic features are not available. Ensure you are using a secure context (HTTPS or localhost).")
+        } else {
+            let output = ""
+            const iterations = 210000
+            const keyLength = 32
+            const digest = "sha256"
+            const saltBytes = crypto.getRandomValues(new Uint8Array(16))
+            const salt = this.bytesToHex(saltBytes)
+            crypto.subtle.importKey("raw",new TextEncoder().encode(password),"PBKDF2",false,["deriveBits"]).then(function(key) {
+                crypto.subtle.deriveBits({
+                    name: "PBKDF2",
+                    hash: "SHA-256",
+                    salt: new TextEncoder().encode(salt),
+                    iterations: iterations
+                },key,keyLength * 8).then(function(buffer) {
+                    const hash = Utilities.bytesToHex(new Uint8Array(buffer))
+                    output = `enc:pbkdf2$${digest}$${iterations}$${salt}$${hash}`
+                })
+            })
+            return output
+        }
+    }
     static ErrorHandler(code: number, reason: string) {
-        const templateMsg =
-            `
-        Something went wrong! \n
-        Stack code: ${code} \n
-        Cause: ${reason}
-        `
+        const templateMsg = `Something went wrong! \nStack code: ${code} \nCause: ${reason}`
         console.error(templateMsg)
     }
     static async FetchAPI(url: string, method: "GET" | "POST") {
@@ -172,10 +159,11 @@ export class Section {
                 event.preventDefault()
                 return
             }
+            
             const passwordValue = formData.password.toString()
             const url_request = new URL(formData.instance_url?.toString() + "/rest/getUser")
             url_request.searchParams.set('u', formData.username?.toString()!)
-            url_request.searchParams.set('p', passwordValue)
+            url_request.searchParams.set('p', Utilities.hashPassword(passwordValue)!)
             url_request.searchParams.set('v', formData.version?.toString()!)
             url_request.searchParams.set('c', formData.app_name?.toString()!)
             url_request.searchParams.set('f', "json")
@@ -187,7 +175,7 @@ export class Section {
                     const jsonData = {
                         instance_url: formData.instance_url?.toString(),
                         username: formData.username?.toString(),
-                        password: await hashPasswordForStorage(passwordValue),
+                        password: Utilities.hashPassword(passwordValue),
                         app_name: formData.app_name?.toString(),
                         version: formData.version?.toString(),
                         roles: {
