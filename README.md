@@ -8,7 +8,7 @@ In order to build or run the website on your machine, you need to have the follo
 
 Because this website focuses entirely on the Subsonic API, you will also need to have a hosted and working subsonic instance that you are able to connect with and authenticate using a username and password, along with a working user account that you've created beforehand.
 
-Additionally, you have to make sure that you're instance has an **HTTPS feature enabled** in order to make it work with the fetch API. If you don't have HTTPS enabled on your instance, **your request's won't work with the script** due to a content mixing error, and the data that you get from the API will **fail to display correctly.**. For more informaiton, please refer to [this issue](#1) to learn more about this content warning.
+Additionally, you have to make sure that you're instance has an **HTTPS feature enabled** in order to make it work with the fetch API. If you don't have HTTPS enabled on your instance, **your request's won't work with the script** due to a content mixing error, and the data that you get from the API will **fail to display correctly.**. For more informaiton, please refer to [this issue](https://github.com/SSP6904/react-subsonic/issues/1) to learn more about this content warning.
 
 ## How it works
 
